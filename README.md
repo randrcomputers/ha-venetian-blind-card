@@ -1,6 +1,7 @@
 # Venetian Blind Card
 
 A Home Assistant Lovelace card for venetian / wood-slat blinds that can **lift** and **tilt**.
+<img width="246" height="346" alt="image" src="https://github.com/user-attachments/assets/2dc36fea-47e0-4394-8ae9-4119156ee71d" />
 
 - **Lift:** Raise / Lower moves the whole blind up and down.
 - **Tilt slats:** Close slats or set them horizontal. The slider does the same thing (0 = closed, 50+ = horizontal).
