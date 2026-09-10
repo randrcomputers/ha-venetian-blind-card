@@ -1,0 +1,18 @@
+# Example helpers for one venetian blind card.
+# Add to a package, or recreate the same helpers in the UI.
+
+input_number:
+  living_room_tilt:
+    name: Living room tilt
+    min: 0
+    max: 100
+    step: 1
+    unit_of_measurement: "%"
+    mode: slider
+    icon: mdi:blinds-horizontal
+
+input_text:
+  living_room_tilt_state:
+    name: Living room tilt state
+    max: 16
+    initial: unknown
