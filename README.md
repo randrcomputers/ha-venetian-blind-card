@@ -2,11 +2,10 @@
 
 A Home Assistant Lovelace card for venetian / wood-slat blinds that can **lift** and **tilt**.
 
-<img width="246" height="346" alt="image" src="https://github.com/user-attachments/assets/2dc36fea-47e0-4394-8ae9-4119156ee71d" />
-
 - **Lift:** Raise / Lower moves the whole blind up and down.
 - **Tilt slats:** Close slats or set them horizontal. The slider does the same thing (0 = closed, 50+ = horizontal).
 - The window graphic follows the **last command**, not a live motor position.
+<img width="246" height="346" alt="image" src="https://github.com/user-attachments/assets/887a92d4-7a53-4075-a24d-b542116f3df4" />
 
 Works with Bond, Z-Wave, Zigbee, or any cover that supports `cover.open_cover`, `cover.close_cover`, and `cover.open_cover_tilt`.
 
