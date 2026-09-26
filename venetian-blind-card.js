@@ -4,6 +4,45 @@
  * 0 = slats closed, 50+ = horizontal. State is optimistic (last command).
  */
 (function () {
+  const DEFAULT_SLAT = [196, 146, 79];
+  const DEFAULT_FRAME = [107, 83, 64];
+
+  function toRgb(color, fallback) {
+    if (Array.isArray(color) && color.length >= 3) {
+      const rgb = color.slice(0, 3).map(Number);
+      if (rgb.every(Number.isFinite)) return rgb;
+    }
+    if (typeof color === "string") {
+      const s = color.trim();
+      if (s.startsWith("rgb")) {
+        const m = s.match(/\d+/g);
+        if (m && m.length >= 3) return m.slice(0, 3).map(Number);
+      }
+      if (s[0] === "#") {
+        let hex = s.slice(1);
+        if (hex.length === 3) hex = hex.split("").map((c) => c + c).join("");
+        if (hex.length === 6) {
+          return [
+            parseInt(hex.slice(0, 2), 16),
+            parseInt(hex.slice(2, 4), 16),
+            parseInt(hex.slice(4, 6), 16),
+          ];
+        }
+      }
+      const csv = s.split(",").map((n) => Number(n.trim()));
+      if (csv.length >= 3 && csv.every(Number.isFinite)) return csv;
+    }
+    return fallback.slice();
+  }
+
+  function mixRgb(rgb, toward, t) {
+    return rgb.map((c, i) => Math.round(c + (toward[i] - c) * t));
+  }
+
+  function rgbCss(rgb) {
+    return `rgb(${rgb[0]}, ${rgb[1]}, ${rgb[2]})`;
+  }
+
   function boot() {
     if (!customElements.get("ha-panel-lovelace") && !customElements.get("hui-view")) {
       setTimeout(boot, 100);
@@ -34,6 +73,8 @@
           entity: "input_number.living_room_tilt",
           state_entity: "input_text.living_room_tilt_state",
           cover_entity: "cover.living_room_blind",
+          slat_color: [196, 146, 79],
+          frame_color: [107, 83, 64],
         };
       }
 
@@ -140,8 +181,24 @@
         const openAmt = raised ? 1 : Math.min(50, Math.max(0, pos)) / 50;
         const name = this._config.name || "Venetian blind";
         const subtitle = this._config.subtitle;
-        const slats = [0, 1, 2, 3, 4, 5, 6, 7];
+        const slats = Array.from({ length: 12 }, (_, i) => i);
         const badgeClass = raised ? "open" : pos < 50 ? "closed" : "open";
+        const slatRgb = toRgb(this._config.slat_color, DEFAULT_SLAT);
+        const frameRgb = toRgb(this._config.frame_color, DEFAULT_FRAME);
+        const slatLight = mixRgb(slatRgb, [255, 255, 255], 0.32);
+        const slatDark = mixRgb(slatRgb, [0, 0, 0], 0.38);
+        const frameInner = mixRgb(frameRgb, [0, 0, 0], 0.42);
+        const slatH = 18 - openAmt * 10;
+        const slatOverlap = -6 + openAmt * 12;
+        const winStyle = [
+          `--open:${openAmt}`,
+          `--angle:${angle}deg`,
+          `--slat-h:${slatH}px`,
+          `--slat-overlap:${slatOverlap}px`,
+          `--slat-face:linear-gradient(180deg, ${rgbCss(slatLight)} 0%, ${rgbCss(slatRgb)} 46%, ${rgbCss(slatDark)} 100%)`,
+          `--frame-color:${rgbCss(frameRgb)}`,
+          `--frame-inner:${rgbCss(frameInner)}`,
+        ].join(";");
 
         return html`
           <ha-card>
@@ -155,12 +212,11 @@
               </div>
 
               <div class="stage">
-                <div
-                  class="window ${raised ? "raised" : ""}"
-                  style="--open: ${openAmt}; --angle: ${angle}deg; --slat-h: ${8 + (1 - openAmt) * 10}px; --slat-gap: ${2 + openAmt * 8}px"
-                >
+                <div class="window ${raised ? "raised" : ""}" style=${winStyle}>
                   <div class="glass"></div>
-                  ${slats.map(() => html`<div class="slat"></div>`)}
+                  <div class="pane">
+                    ${slats.map(() => html`<div class="slat"></div>`)}
+                  </div>
                   <div class="frame"></div>
                 </div>
                 <div class="readout">
@@ -204,6 +260,9 @@
           ha-card {
             overflow: hidden;
             background: linear-gradient(180deg, #2a2d33 0%, #1c1e22 100%);
+          }
+          :host {
+            display: block;
           }
           .wrap {
             box-sizing: border-box;
@@ -251,9 +310,10 @@
             position: relative;
             width: 100%;
             height: 168px;
-            border-radius: 10px;
+            border-radius: 0;
             background: #87a6c4;
-            box-shadow: inset 0 0 0 7px #6b5340, inset 0 0 0 9px #3d2e24;
+            box-shadow: inset 0 0 0 8px var(--frame-color, #6b5340),
+              inset 0 0 0 10px var(--frame-inner, #3d2e24);
             overflow: hidden;
           }
           .glass {
@@ -261,17 +321,30 @@
             inset: 10px;
             background: linear-gradient(180deg, #9ec0e4 0%, #e7f3ff 50%, #b9d2ea 100%);
           }
-          .slat {
-            position: relative;
+          .pane {
+            position: absolute;
+            inset: 10px;
             z-index: 1;
-            height: var(--slat-h, 16px);
-            margin: var(--slat-gap, 3px) 12px;
-            border-radius: 2px;
-            background: linear-gradient(180deg, #e0bc86 0%, #c4924f 42%, #8d6230 100%);
-            box-shadow: 0 1px 0 #f4ddb0 inset, 0 2px 3px rgba(0, 0, 0, 0.35);
-            transform: scaleY(calc(0.28 + (1 - var(--open)) * 0.72));
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+          }
+          .slat {
+            flex: 0 0 var(--slat-h, 20px);
+            width: 100%;
+            margin-top: var(--slat-overlap, -7px);
+            border-radius: 0;
+            background: var(--slat-face);
+            box-shadow: 0 1px 0 rgba(255, 255, 255, 0.28) inset,
+              0 1px 2px rgba(0, 0, 0, 0.35);
+            transform: scaleY(calc(0.7 + (1 - var(--open)) * 0.3));
             transform-origin: center center;
-            transition: transform 0.25s ease, opacity 0.25s ease, margin 0.25s ease;
+            transition: transform 0.25s ease, opacity 0.25s ease, margin 0.25s ease,
+              flex-basis 0.25s ease;
+          }
+          .slat:first-child {
+            margin-top: 0;
           }
           .window.raised .slat {
             opacity: 0;
@@ -281,8 +354,8 @@
             pointer-events: none;
             position: absolute;
             inset: 0;
-            box-shadow: inset 0 0 0 7px #6b5340;
-            border-radius: 10px;
+            box-shadow: inset 0 0 0 8px var(--frame-color, #6b5340);
+            border-radius: 0;
           }
           .readout {
             display: flex;
@@ -388,6 +461,8 @@
           { name: "entity", selector: { entity: { domain: "input_number" } } },
           { name: "state_entity", selector: { entity: { domain: "input_text" } } },
           { name: "cover_entity", selector: { entity: { domain: "cover" } } },
+          { name: "slat_color", selector: { color_rgb: {} } },
+          { name: "frame_color", selector: { color_rgb: {} } },
         ];
       }
 
@@ -398,6 +473,8 @@
           entity: "Tilt slider (input_number)",
           state_entity: "Last command (input_text)",
           cover_entity: "Blind cover",
+          slat_color: "Slat color",
+          frame_color: "Window frame color",
         };
         return labels[schema.name] || schema.name;
       }

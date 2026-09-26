@@ -2,6 +2,8 @@
 
 Lovelace card for venetian blinds with **lift** (raise / lower) and **tilt slats** (closed / horizontal).
 
+Pick slat color and square window-frame color in the visual editor. Closed slats overlap and fill the pane.
+
 For each blind you need:
 
 1. A `cover` entity

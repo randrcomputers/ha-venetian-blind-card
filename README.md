@@ -1,16 +1,27 @@
 # Venetian Blind Card
 
+[![hacs_badge](https://img.shields.io/badge/HACS-Custom-41BDF5.svg)](https://github.com/hacs/integration)
+[![Open your Home Assistant instance and open a repository inside the Home Assistant Community Store.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=randrcomputers&repository=ha-venetian-blind-card&category=plugin)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+
 A Home Assistant Lovelace card for venetian / wood-slat blinds that can **lift** and **tilt**.
 
 - **Lift:** Raise / Lower moves the whole blind up and down.
 - **Tilt slats:** Close slats or set them horizontal. The slider does the same thing (0 = closed, 50+ = horizontal).
+- **Colors:** Pick slat color and square window-frame color in the visual editor.
 - The window graphic follows the **last command**, not a live motor position.
-<img width="246" height="371" alt="image" src="https://github.com/user-attachments/assets/8a2c77bd-7d0c-4894-8823-5bd082416ef2" />
-<img width="240" height="373" alt="image" src="https://github.com/user-attachments/assets/e1e708ad-3e08-4870-9ca8-19740efd8cb5" />
-
-
 
 Works with Bond, Z-Wave, Zigbee, or any cover that supports `cover.open_cover`, `cover.close_cover`, and `cover.open_cover_tilt`.
+
+![Closed and horizontal slats](media/preview.png)
+
+| Closed slats | Horizontal slats |
+| :---: | :---: |
+| ![Closed slats](media/closed.png) | ![Horizontal slats](media/horizontal.png) |
+
+Slat and frame colors are optional. Defaults are oak slats and a brown frame:
+
+![White slats with a charcoal frame, and walnut slats with a dark frame](media/colors.png)
 
 ## What you need for each blind
 
@@ -60,19 +71,26 @@ Reload helpers / restart if you added YAML.
 
 ## Install the card
 
-### HACS (custom repository)
+### HACS (recommended)
 
-1. HACS → Frontend → Custom repositories
-2. Add this GitHub repo as type **Dashboard** (Lovelace)
-3. Install **Venetian Blind Card**
+If HACS is already on your Home Assistant, click this button to open the repository and download it:
+
+[![Open your Home Assistant instance and open a repository inside the Home Assistant Community Store.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=randrcomputers&repository=ha-venetian-blind-card&category=plugin)
+
+Then **Download**, reload dashboard resources, and hard-refresh the browser (**Ctrl+F5**).
+
+Or add it by hand:
+
+1. HACS → Frontend → ⋮ → Custom repositories
+2. Add `https://github.com/randrcomputers/ha-venetian-blind-card` as type **Dashboard** (Lovelace)
+3. Download **Venetian Blind Card**
 4. Restart Home Assistant, then hard-refresh the browser
 
 ### Manual
 
 1. Copy `venetian-blind-card.js` to `/config/www/`
-2. Settings → Dashboards → ⋮ → Resources
-3. Add `/local/venetian-blind-card.js` as a **JavaScript module**
-4. Hard-refresh the browser (Ctrl+F5)
+2. [![Open your Home Assistant instance and show your dashboard resources.](https://my.home-assistant.io/badges/lovelace_resources.svg)](https://my.home-assistant.io/redirect/lovelace_resources/) → add `/local/venetian-blind-card.js` as a **JavaScript module**
+3. Hard-refresh the browser (Ctrl+F5)
 
 ## Add the card on a dashboard
 
@@ -87,6 +105,8 @@ Reload helpers / restart if you added YAML.
 | Tilt slider (input_number) | `entity` | The number helper you created |
 | Last command (input_text) | `state_entity` | The text helper you created |
 | Blind cover | `cover_entity` | The real cover entity |
+| Slat color | `slat_color` | Optional RGB/hex color for the slats |
+| Window frame color | `frame_color` | Optional RGB/hex color for the square frame |
 
 Do not save the sample `living_room_*` entities unless you actually created those helpers.
 
@@ -97,6 +117,8 @@ subtitle: Venetian blind
 entity: input_number.living_room_tilt
 state_entity: input_text.living_room_tilt_state
 cover_entity: cover.living_room_blind
+slat_color: [196, 146, 79]
+frame_color: [107, 83, 64]
 ```
 
 `custom:bond-tilt-card` still works as an old name for the same card.
