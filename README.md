@@ -13,7 +13,6 @@ A Home Assistant Lovelace card for venetian / wood-slat blinds that can **lift**
 
 Works with Bond, Z-Wave, Zigbee, or any cover that supports `cover.open_cover`, `cover.close_cover`, and `cover.open_cover_tilt`.
 
-![Closed and horizontal slats](media/preview.png)
 
 | Closed slats | Horizontal slats |
 | :---: | :---: |
